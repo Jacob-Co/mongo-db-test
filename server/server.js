@@ -23,3 +23,5 @@ app.post('/todos', async (req, res) => {
 
   todo.save().then((doc) => res.send(doc), (err) => res.status(400).send(err));
 })
+
+module.exports = {app};
