@@ -8,12 +8,25 @@ MongoClient.connect(url, { useUnifiedTopology: true }, (err, client) => {
   }
   // const todoDb = client.db('TodoApp');
   const usersDb = client.db('UsersApp'); // Connect to the database name
+  const todoDb = client.db('TodoApp')
   console.log('Connected to MongoDB server');
 
-  usersDb.collection('Users') // Connect to the collection
-  .find({name: 'Jacob'})
-  .count()
-  .then(count => console.log(count), err => console.log(`An error occured ${err}`))
+  usersDb.collection('Users')
+  .findOneAndUpdate({_id: new ObjectID('5f211930825617142366d9ae')}, {
+    $set: {
+      name: 'Isabel Reyes'
+    },
+    $inc: {
+      age: -1
+    }
+  }, {
+    returnOriginal: false
+  }).then(result => console.log(result))
+
+  // usersDb.collection('Users') // Connect to the collection
+  // .find({name: 'Jacob'})
+  // .count()
+  // .then(count => console.log(count), err => console.log(`An error occured ${err}`))
 
   // todoDb.collection('Todos')
   // .find()// Returns a mongo cursor, may pass in a querry object
