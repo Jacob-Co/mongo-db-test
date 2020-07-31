@@ -34,7 +34,7 @@ app.get('/todos/:id', (req, res) => {
   } else {
     Todo.findById(id)
       .then(todo => {
-        if (!todo) {
+        if (todo === null) {
           res.status(404).send();
         } else {
           res.send({todo})
@@ -51,6 +51,18 @@ app.get('/todos', (req, res) => {
   }).catch(e => res.status(400).send(e));
 });
 
+app.delete('/todos/:id', (req, res) => {
+  let id = req.params.id;
 
+  if (!ObjectID.isValid(id)) return res.status(404).send();
+
+  Todo.findByIdAndRemove(id).then((todo) => {
+    if (todo === null) {
+      res.status(404).send();
+    } else {
+      res.send({todo});
+    }
+  }).catch(e => res.status(400).send())
+})
 
 module.exports = {app}; // for testing purposes
