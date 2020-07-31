@@ -11,8 +11,10 @@ const {Todo} = require('./models/todo');
 
 let app = express();
 
-app.listen(3000, () => {
-  console.log('Started on port 3000');
+let port = process.env.PORT || 3000;
+
+app.listen(port, () => {
+  console.log(`Started on port ${port}`);
 });
 
 app.use(bodyParser.json());

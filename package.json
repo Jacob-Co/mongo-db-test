@@ -9,12 +9,16 @@
     "mongodb": "^3.5.9",
     "mongoose": "^5.9.26"
   },
+  "engines": {
+    "node": "14.3.0"
+  },
   "devDependencies": {
     "mocha": "^8.0.1",
     "chai": "^4.2.0",
     "supertest": "^4.0.2"
   },
   "scripts": {
+    "start": "node server/server.js",
     "test": "mocha server/**/*.test.js",
     "test-watch": "nodemon --exec 'npm test'"
   },
