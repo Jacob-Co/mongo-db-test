@@ -28,17 +28,17 @@ app.post('/todos', (req, res) => {
 app.get('/todos/:id', (req, res) => {
   let id = req.params.id;
   if (!ObjectID.isValid(id)) {
-    res.status(404).send({error: 'Invalid ObjectID'});
+    res.status(404).send();
   } else {
     Todo.findById(id)
       .then(todo => {
         if (!todo) {
-          res.status(404).send({error: 'No item found with that ID'});
+          res.status(404).send();
         } else {
           res.send({todo})
         }
       })
-      .catch(e => res.status(400).send({}))
+      .catch(e => res.status(400).send())
   }
 });
 
