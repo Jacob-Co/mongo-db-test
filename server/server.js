@@ -12,6 +12,7 @@ const {ObjectID} = require('mongodb');
 const {mongoose} = require('./db/mongoose');
 const {User} = require('./models/user');
 const {Todo} = require('./models/todo');
+const todo = require('./models/todo');
 
 // HTTP Server Configurations
 let app = express();
@@ -33,6 +34,14 @@ app.post('/todos', (req, res) => {
 
   todo.save().then((doc) => res.send(doc), (err) => res.status(400).send(err));
 });
+
+//POST /users
+
+app.post('/users', (req, res) => {
+  let user = new User(_.pick(req.body, ['email', 'password', 'tokens']));
+
+  user.save().then((doc) => res.send(doc), (err) => res.status(400).send(err));
+})
 
 app.get('/todos/:id', (req, res) => {
   let id = req.params.id;
