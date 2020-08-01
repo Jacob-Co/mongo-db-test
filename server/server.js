@@ -1,3 +1,6 @@
+// Environements
+require('./config/config');
+
 // 3rd party nodes
 const _ = require('lodash');
 const express = require('express');
@@ -13,7 +16,7 @@ const {Todo} = require('./models/todo');
 // HTTP Server Configurations
 let app = express();
 
-let port = process.env.PORT || 3000;
+let port = process.env.PORT;
 
 app.listen(port, () => {
   console.log(`Started on port ${port}`);
