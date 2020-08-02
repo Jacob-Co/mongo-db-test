@@ -35,12 +35,18 @@ app.post('/todos', (req, res) => {
   todo.save().then((doc) => res.send(doc), (err) => res.status(400).send(err));
 });
 
-//POST /users
-
 app.post('/users', (req, res) => {
-  let user = new User(_.pick(req.body, ['email', 'password', 'tokens']));
+  let user = new User(_.pick(req.body, ['email', 'password']));
 
-  user.save().then((doc) => res.send(doc), (err) => res.status(400).send(err));
+  user.save()
+    .then(() => {
+      return user.generateAuthToken(); // places all token and access into user then returns promise with hash and salted token string
+    })
+    .then(token => { // 'x-' is a custom header
+      // console.log(token);
+      res.header('x-auth', token).send(user);
+    })
+    .catch((err) => res.status(400).send(err));
 })
 
 app.get('/todos/:id', (req, res) => {
