@@ -12,7 +12,8 @@ const {ObjectID} = require('mongodb');
 const {mongoose} = require('./db/mongoose');
 const {User} = require('./models/user');
 const {Todo} = require('./models/todo');
-const todo = require('./models/todo');
+const {authenticate} = require('./middleware/authenticate');
+// const todo = require('./models/todo');
 
 // HTTP Server Configurations
 let app = express();
@@ -23,7 +24,7 @@ app.listen(port, () => {
   console.log(`Started on port ${port}`);
 });
 
-// Middle Wear
+// Middle Wear for all routes
 app.use(bodyParser.json());
 
 // HTTP routes
@@ -72,6 +73,12 @@ app.get('/todos', (req, res) => {
   }).catch(e => res.status(400).send(e));
 });
 
+
+
+app.get('/users/me', authenticate,(req, res) => {
+  res.send(req.user);
+});
+
 app.delete('/todos/:id', (req, res) => {
   let id = req.params.id;
 
@@ -84,7 +91,7 @@ app.delete('/todos/:id', (req, res) => {
       res.send({todo});
     }
   }).catch(e => res.status(400).send())
-})
+});
 
 app.patch('/todos/:id', (req, res) => {
   let id = req.params.id;
