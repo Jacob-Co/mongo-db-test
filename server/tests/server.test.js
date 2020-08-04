@@ -6,22 +6,12 @@ const {ObjectID} = require('mongodb');
 // Local modules
 const {app} = require('./../server');
 const {Todo} =  require('./../models/todo');
+const {User} = require('./../models/user');
+const {todos, populateTodos, users, populateUsers} = require('./seed/seed');
 
-const todos = [{
-  _id: new ObjectID(),
-  text: 'First test todo'
-}, {
-  _id: new ObjectID(),
-  text: 'Second test todo',
-  completed: true,
-  completedAt: 888
-}]
+beforeEach(populateUsers);
 
-beforeEach((done) => {
-  Todo.deleteMany({}).then(() => {
-    return Todo.insertMany(todos);
-  }).then(() => done());
-})
+beforeEach(populateTodos);
 
 describe('POST /todos', () => {
   it('should create a new todo', (done) => {
@@ -63,7 +53,7 @@ describe('POST /todos', () => {
         }).catch((e) => done(e));
       });
   });
-})
+});
 
 describe('GET /todos', () => {
   it('should get all todos', (done) => {
@@ -75,7 +65,7 @@ describe('GET /todos', () => {
       })
       .end(done)
   })
-})
+});
 
 describe('GET /todos/:id', () => {
   it('should return todo doc', (done) => {
@@ -102,7 +92,7 @@ describe('GET /todos/:id', () => {
       .end(done);
   });
 
-})
+});
 
 describe('DELETE /todos/:id', () => {
   it('should remove a todo', (done) => {
@@ -143,7 +133,7 @@ describe('DELETE /todos/:id', () => {
     .expect(404)
     .end(done);
   });
-})
+});
 
 describe('PATCH /todos/:id', () => {
   it('should update the todo', (done) => {
@@ -180,6 +170,92 @@ describe('PATCH /todos/:id', () => {
         expect(res.body.todo.text).to.equal(updatedTodo.text);
         expect(res.body.todo.completedAt).to.not.exist;
       })
+      .end(done);
+  });
+});
+
+describe('GET /users/me', () => {
+  it('should return user if authenticated', (done) => {
+    request(app)
+      .get('/users/me')
+      .set('x-auth', users[0].tokens[0].token)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body._id).to.equal(users[0]._id.toHexString());
+        expect(res.body.email).to.equal(users[0].email);
+      })
+      .end(done);
+  });
+
+  it('should return 401 if not authenticated', (done) => {
+    request(app)
+      .get('/users/me')
+      .expect(401)
+      .expect((res) => {
+        expect(res.body).to.be.empty;
+        expect(res.body).to.eql({});
+      })
+      .end(done);
+  });
+})
+
+describe('POST /users', () => {
+  it('should create a user', (done) => {
+    let email = 'example@example.com';
+    let password = '123456';
+
+    request(app)
+      .post('/users')
+      .send({email, password})
+      .expect(200)
+      .expect((res) => {
+        expect(res.headers['x-auth']).to.exist;
+        expect(res.body._id).to.exist;
+        expect(res.body.email).to.equal(email);
+      })
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
+
+        User.findOne({email}).then((user) => {
+          expect(user).to.exist;
+          expect(user.password).to.not.equal(password);
+          done();
+        })
+      });
+  });
+
+  it('should return validation errors if email is invalid', (done) => {
+    let email = 'example.com';
+    let password = '12345';
+
+    request(app)
+      .post('/users')
+      .send({email, password})
+      .expect(400)
+      .end(done);
+  });
+
+  it('should return validation errors if password is invalid', (done) => {
+    let email = 'example@example.com';
+    let password = '12345';
+
+    request(app)
+      .post('/users')
+      .send({email, password})
+      .expect(400)
+      .end(done);
+  });
+
+  it('should not create user if email in use', (done) => {
+    let email = users[0].email;
+    let password = '123456';
+
+    request(app)
+      .post('/users')
+      .send({email, password})
+      .expect(400)
       .end(done);
   });
 })
