@@ -13,6 +13,8 @@ const {mongoose} = require('./db/mongoose');
 const {User} = require('./models/user');
 const {Todo} = require('./models/todo');
 const {authenticate} = require('./middleware/authenticate');
+const user = require('./models/user');
+const { rest } = require('lodash');
 // const todo = require('./models/todo');
 
 // HTTP Server Configurations
@@ -114,5 +116,19 @@ app.patch('/todos/:id', (req, res) => {
      res.status(400).send();
    })
 })
+
+app.post('/users/login', (req, res) => {
+  let body = _.pick(req.body, ['email', 'password']);
+   
+  User.findByCredentials(body.email, body.password)
+    .then((user) => {
+      return user.generateAuthToken().then((token) => {
+        res.header('x-auth', token).send(user);
+      })
+    })
+    .catch((e) => {
+      res.status(400).send();
+    })
+});
 
 module.exports = {app}; // for testing purposes
