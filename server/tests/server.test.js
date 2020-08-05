@@ -19,6 +19,7 @@ describe('POST /todos', () => {
 
     request(app)
       .post('/todos')
+      .set('x-auth', users[0].tokens[0].token)
       .send({text}) //auto converted to JSON by supertest
       .expect(200)
       .expect((res) => {
@@ -40,6 +41,7 @@ describe('POST /todos', () => {
   it('should not create a new todo with invalid body data', (done) => {
     request(app)
       .post('/todos')
+      .set('x-auth', users[0].tokens[0].token)
       .send({})
       .expect(400)
       .end((err, res) => { // end runs the request of supertest
@@ -59,9 +61,10 @@ describe('GET /todos', () => {
   it('should get all todos', (done) => {
     request(app)
       .get('/todos')
+      .set('x-auth', users[0].tokens[0].token)
       .expect(200)
       .expect((res) => {
-        expect(res.body.todos.length).to.equal(2);
+        expect(res.body.todos.length).to.equal(1);
       })
       .end(done)
   })
@@ -71,6 +74,7 @@ describe('GET /todos/:id', () => {
   it('should return todo doc', (done) => {
     request(app)
       .get(`/todos/${todos[0]._id.toHexString()}`)
+      .set('x-auth', users[0].tokens[0].token)
       .expect(200)
       .expect(res => {
         expect(res.body.todo.text).to.equal(todos[0].text); 
@@ -81,6 +85,7 @@ describe('GET /todos/:id', () => {
   it('should return 404 if todo not found', (done) => {
     request(app)
       .get(`/todos/${new ObjectID().toHexString()}`)
+      .set('x-auth', users[0].tokens[0].token)
       .expect(404)
       .end(done);
   });
@@ -88,6 +93,7 @@ describe('GET /todos/:id', () => {
   it('should return 404 for non-object ids', (done) => {
     request(app)
       .get(`/todos/1234`)
+      .set('x-auth', users[0].tokens[0].token)
       .expect(404)
       .end(done);
   });
@@ -307,6 +313,26 @@ describe('POST /users/login', () => {
           expect(user.tokens.length).to.equal(0);
           done();
         }).catch((e) => done(e));
+      });
+  })
+})
+
+describe('DELETE /users/me/token', () => {
+  it('should remove auth token on log out', (done) => {
+    let tokenToDelete = users[0].tokens[0].token;
+
+    request(app)
+      .delete('/users/me/token')
+      .set('x-auth', tokenToDelete)
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err);
+
+        User.findById(users[0]._id)
+          .then((user) => {
+            expect(user.tokens.length).to.equal(0);
+            done();
+          }).catch(e => done(e));
       });
   })
 })
